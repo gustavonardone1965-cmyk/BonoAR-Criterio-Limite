@@ -81,7 +81,7 @@ ul.note{margin:0;padding-left:18px;display:grid;gap:4px}
 </head><body>
 <div class="wrap">
 <header>
-  <div class="lbl"><a class="lnk" href="index.html">← Volver a «¿Hasta dónde conviene seguir en bonos en pesos?»</a></div>
+  <div class="lbl"><a class="lnk" href="index.html">← Volver a «¿Hasta dónde conviene seguir en bonos en pesos?»</a> · <a class="lnk" href="index.html#mapa">Mapa de optimización</a></div>
   <h1>Caminata hamiltoniana diaria de la cartera</h1>
   <p class="sub">Desde la posición inicial de la página de bonos (cartera, caja, dólar, TAMAR e inflación), una caminata de Monte Carlo hamiltoniano de hasta 100.000 iteraciones aprende de los últimos meses de inflación y dólar, recorre futuros posibles en los que la inflación oscila y arma, día por día, el saldo más probable con su intervalo de confianza hasta la fecha final que elijas.</p>
   <p id="fuente" class="note"></p>
@@ -1014,7 +1014,7 @@ function gNivel(){if(!RES||!NV)return;const R=RES,N=R.N,i=+$("anim").value,[lo,h
    shapes:[{type:"rect",xref:"x",yref:"y",x0:R.Q.pib[i][lo]*100,x1:R.Q.pib[i][hi]*100,y0:R.Q.V[i][lo]/1e6,y1:R.Q.V[i][hi]/1e6,line:{color:css("--accent"),width:1.5,dash:"dash"},fillcolor:"rgba(0,0,0,0)"},
     {type:"line",xref:"x2 domain",yref:"y2",x0:0,x1:1,y0:0,y1:0,line:{color:css("--fg"),width:1.2}},{type:"line",xref:"x2",yref:"y2 domain",x0:D[i],x1:D[i],y0:0,y1:1,line:{color:css("--accent"),width:1,dash:"dot"}},...(R.iHoy>0?[{type:"rect",xref:"x2",yref:"y2 domain",x0:D[0],x1:D[R.iHoy],y0:0,y1:1,fillcolor:css("--warnbg"),opacity:0.6,line:{width:0},layer:"below"}]:[])]},{...cfg,responsive:false});
  $("anim_lbl").textContent=fd(D[i]);reloj(i);
- $("anim_txt").innerHTML=`<b>${fd(D[i])}</b> · caminata: saldo ${fM(t.V[i])}, inflación del mes ${pc(t.pim[i],2)}, dólar $${fmt(t.tc[i])} · dólar de indiferencia $${fmt(di)} · ventaja de bonos ${t.ven[i]>=0?"+":"−"}USD ${fmt(Math.abs(t.ven[i]))} (IC ${cl}: ${fmt(R.Q.ven[i][lo])} a ${fmt(R.Q.ven[i][hi])}) · bonos adelante en ${pc(pp,0)} de los caminos → <span class="pill ${gana?"ok":"mid"}">${gana?"bonos adelante":"dólar adelante"}</span>`}
+ $("anim_txt").innerHTML=`<b>${fd(D[i])}</b> · caminata: saldo ${fM(t.V[i])}, inflación del mes ${pc(t.pim[i],2)}, dólar $${fmt(t.tc[i])} · dólar de indiferencia $${fmt(di)} · ventaja de bonos <b>en este camino</b>: ${t.ven[i]>=0?"+":"−"}USD ${fmt(Math.abs(t.ven[i]))} <span class="pill ${gana?"ok":"mid"}">${gana?"bonos adelante":"dólar adelante"}</span> · <b>en todos los caminos</b>: mediana USD ${fmt(R.Q.ven[i][3])} (IC ${cl}: ${fmt(R.Q.ven[i][lo])} a ${fmt(R.Q.ven[i][hi])}), bonos adelante en ${pc(pp,0)} de los caminos. El número de este camino cambia con «Ver otra caminata»; para decidir usá el de todos los caminos.`}
 const DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 function reloj(i){const R=RES,d=new Date(R.dias[i]+"T12:00:00Z"),k=R.dk[i],pas=i<=R.iHoy&&R.iHoy>0;
  $("rl_dia").textContent=d.getUTCDate();$("rl_mes").textContent=MESES_L[d.getUTCMonth()];$("rl_anio").textContent=d.getUTCFullYear();$("rl_sem").textContent=DIAS[d.getUTCDay()];
