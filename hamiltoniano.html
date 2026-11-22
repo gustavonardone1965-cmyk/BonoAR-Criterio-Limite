@@ -65,7 +65,15 @@ ul.note{margin:0;padding-left:18px;display:grid;gap:4px}
 <style>
 .tot td{font-weight:600;border-top:2px solid var(--line)}
 .lnk{color:var(--accent);font-weight:600}
-#g_saldo{height:480px}#g_niv{min-height:560px;min-width:0;overflow:hidden}.big{height:380px}.mini{height:300px}#g_int,#g_hist{height:380px}
+#g_saldo{height:480px}
+#reloj{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.rl-f{display:flex;gap:10px;align-items:center}.rl-d{font:700 2.4rem/1 var(--fm);font-variant-numeric:tabular-nums;min-width:2ch;text-align:right;color:var(--accent)}
+.rl-m{font:600 1.25rem/1.1 var(--fd);text-transform:capitalize}.rl-y{font:500 .9rem var(--fm);color:var(--muted)}#rl_sem{text-transform:capitalize}
+.rl-r{flex:1;min-width:220px;display:grid;gap:6px}.rl-t{position:relative;height:8px;background:var(--line);border-radius:4px}#rl_bar{height:100%;width:0;background:var(--accent);border-radius:4px}
+#rl_hoy{position:absolute;top:-4px;width:2px;height:16px;background:var(--warn)}
+@media (max-width:600px){#reloj{padding:8px 10px;gap:8px}.rl-d{font-size:1.8rem}.rl-m{font-size:1.05rem}.rl-r{min-width:100%}}
+.conf-g{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:12px}@media (max-width:760px){.conf-g{grid-template-columns:1fr}}#conf_ver{display:grid;gap:10px;align-content:start}.conf-p{font:700 2.6rem/1 var(--fm)}.conf-p small{font-size:1rem;color:var(--muted)}#conf_tab td{vertical-align:top;white-space:normal}#conf_tab td.act{min-width:260px}#conf_tab td:nth-child(2){min-width:110px}
+#g_niv{min-height:560px;min-width:0;overflow:hidden}.big{height:380px}.mini{height:300px}#g_int,#g_hist{height:380px}
 .g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:12px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .lect li{margin-bottom:4px}
@@ -113,12 +121,22 @@ ul.note{margin:0;padding-left:18px;display:grid;gap:4px}
   <p class="note"><b>Izquierda, el plano inflación × saldo.</b> Eje horizontal: inflación del mes en la caminata (oscila; entre un mes y el siguiente se interpola día a día). Eje vertical: saldo total de la cartera ese día. Curvas: el dólar de indiferencia, el dólar a partir del cual te hubiera convenido dolarizar todo hoy y hacer los mismos retiros vendiendo dólares (suponen que la inflación del eje se mantiene para indexar los retiros). Recuadro punteado: intervalo de confianza de inflación y saldo de ese día. Punto grande: la caminata, verde si su dólar está por debajo de la curva que le toca (bonos adelante) y naranja si el dólar va adelante.</p>
   <p class="note"><b>Derecha, ¿bonos o dólar?</b> Cada día, cuántos dólares más (o menos) tenés por haber seguido en bonos frente a haber comprado dólares hoy con toda la cartera y vender dólares para cada retiro. Arriba de la línea cero ganan los bonos; abajo, el dólar. La banda es el intervalo de confianza elegido, los puntos celestes son 300 caminos ese día y el recuadro de arriba dice en qué parte de los caminos van adelante los bonos. La línea negra es la misma caminata de la izquierda: ahí se ve cómo los saltos del dólar la acercan o la alejan del cero.</p>
   <div class="card" style="display:grid;gap:10px">
+   <div id="reloj" role="timer" aria-live="off">
+    <div class="rl-f"><span id="rl_dia" class="rl-d">—</span><div><div id="rl_mes" class="rl-m">—</div><div class="rl-y"><span id="rl_sem"></span> · <span id="rl_anio"></span></div></div></div>
+    <div class="rl-r"><div id="rl_info" class="note" style="color:var(--fg)"></div><div class="rl-t"><div id="rl_bar"></div><span id="rl_hoy" title="hoy" hidden></span></div></div>
+   </div>
    <div class="btns" style="align-items:center"><button id="b_play" class="btn pri">▶ Reproducir</button>
     <label class="note" for="anim" style="display:flex;gap:8px;align-items:center;flex:1;min-width:220px">Día <input id="anim" type="range" min="0" max="1" value="0" style="flex:1"> <span id="anim_lbl" style="font-family:var(--fm)"></span></label>
     <label class="note" for="vel">Velocidad <select id="vel"><option value="1">1 día por cuadro</option><option value="3" selected>3 días</option><option value="7">1 semana</option><option value="15">15 días</option></select></label></div>
-   <div id="anim_txt" class="note" style="color:var(--fg)" aria-live="polite"></div>
    <div id="g_niv"></div>
+   <div id="anim_txt" class="note" style="color:var(--fg)" aria-live="polite"></div>
   </div>
+</section>
+<section>
+  <h2>¿La caminata es confiable?</h2>
+  <p class="note">Se corren 4 caminatas hamiltonianas desde puntos de partida distintos (las iteraciones elegidas se reparten entre las 4) y se revisan los controles que usa la estadística bayesiana para saber si el método exploró bien. Si las 4 llegan al mismo lugar, sin desestabilizarse y con suficientes escenarios distintos, los intervalos y el saldo más probable son de fiar.</p>
+  <div class="conf-g"><div class="card" id="conf_ver"></div><div class="card tbl"><table id="conf_tab"></table></div></div>
+  <div class="card"><div id="g_traza"></div><p class="note">Traza: cada línea es una caminata. Si se ven como ruido parejo, mezcladas y sin tendencia, la caminata exploró bien; si una se queda en otro nivel o tiene tendencia, no convergió.</p></div>
 </section>
 <section>
   <h2>Inflación y dólar: lo que dicen los datos y lo que viene</h2>
@@ -494,12 +512,15 @@ function construir(P){
  const tk=[...Array(K)].map((_,k)=>yrs(P.T0,P.MES1[k]));
  return {...P,b,tk,NP:P.bay?7:0,D:(P.bay?7:0)+4*K,W0:P.caja+P.H.reduce((s,h)=>s+h.vn*h.px,0)}}
 // camino completo a partir de z (para mostrar): inflación, IPC, TAMAR, tasa real extra, dólar, retiros, caja, valor mensual
-function theta(M,z){const B=M.bay,t=new Float64Array(7);for(let i=0;i<7;i++){let v=B.mu[i];for(let j=0;j<=i;j++)v+=B.L[i][j]*z[j];t[i]=v}return t}
+function thetaRaw(M,z){const B=M.bay,t=new Float64Array(7);for(let i=0;i<7;i++){let v=B.mu[i];for(let j=0;j<=i;j++)v+=B.L[i][j]*z[j];t[i]=v}return t}
+// persistencia total φ = a + b·h = 0,98·tanh(w): el modelo siempre es estable y la caminata no choca contra ninguna pared
+const aDe=t=>0.98*Math.tanh(t[1])-t[2]*t[5];
+function theta(M,z){const t=thetaRaw(M,z);t[1]=aDe(t);return t}
 function camino(M,z){
  const K=M.K,P0=M.NP||0,pi=new Float64Array(K),cpi=new Float64Array(K),tam=new Float64Array(K),y=new Float64Array(K),tc=new Float64Array(K),R=new Float64Array(K),c=new Float64Array(K),V=new Float64Array(K),cob=new Float64Array(K),G=new Float64Array(K),gx=new Float64Array(K);
  let d=0,cp=1,yy=0,lt=Math.log(M.TC0),cc=M.caja,Vprev=M.W0;const th=M.bay?theta(M,z):null;let pprev=M.bay?M.bay.pi0:0;
  for(let k=0;k<K;k++){const e=z[P0+k],u=z[P0+K+k],v=z[P0+2*K+k],w=z[P0+3*K+k];
-  if(th){const [cc_,a,b,sp,m,h,sg]=th;const g=m+h*pprev+Math.exp(sg)*u;pi[k]=Math.max(-0.02,cc_+a*pprev+b*g+Math.exp(sp)*e);pprev=pi[k];gx[k]=g;lt+=g}
+  if(th){const [cc_,a,b,sp,m,h,sg]=th,oG=M.obsG&&M.obsG[k],oP=M.obsPi&&M.obsPi[k];const g=oG!=null&&isFinite(oG)?oG:m+h*pprev+Math.exp(sg)*u;pi[k]=oP!=null&&isFinite(oP)?oP:Math.max(-0.02,cc_+a*pprev+b*g+Math.exp(sp)*e);pprev=pi[k];gx[k]=g;lt+=g}
   else{d=M.phi*d+M.sp*e;pi[k]=M.pib+d;gx[k]=Math.log(1+pi[k])+M.sf*u;lt+=gx[k]}
   const cpiIni=cp;cp*=1+pi[k];cpi[k]=cp;
   tam[k]=M.TAMAR0+9.6*(pi[k]-M.BR[k])+M.sT*w;yy+=M.sy*v;y[k]=yy;tc[k]=Math.exp(lt);
@@ -510,23 +531,24 @@ function camino(M,z){
  return {pi,cpi,tam,y,tc,R,c,V,cob,G,gx,th,real:V[K-1]/cpi[K-1]}}
 // ---------- modelo bayesiano de inflación y dólar (últimos meses de IPC y A3500) ----------
 // π_t = c + a·π_{t-1} + b·g_t + σπ·ε ;  g_t = Δlog dólar = m + h·π_{t-1} + σg·η.  θ=[c,a,b,log σπ,m,h,log σg]
-function lpost(B,t,grad){const [c,a,b,sp,m,h,sg]=t,P=B.pr;let lp=0;if(grad)grad.fill(0);
- if(!(Math.abs(a+b*h)<0.98))return -Infinity;
- const ip=Math.exp(-2*sp),ig=Math.exp(-2*sg);let R2=0,Q2=0;
+function lpost(B,tr,grad){const a=aDe(tr),[c,w,b,sp,m,h,sg]=tr,P=B.pr;let lp=0;if(grad)grad.fill(0);
+ const ip=Math.exp(-2*sp),ig=Math.exp(-2*sg);let R2=0,Q2=0,ga=0;
  for(let i=0;i<B.n;i++){const p=B.p[i],g=B.g[i],r=B.y[i]-c-a*p-b*g,q=g-m-h*p;R2+=r*r;Q2+=q*q;
-  if(grad){grad[0]+=r*ip;grad[1]+=r*p*ip;grad[2]+=r*g*ip;grad[4]+=q*ig;grad[5]+=q*p*ig}}
+  if(grad){grad[0]+=r*ip;ga+=r*p*ip;grad[2]+=r*g*ip;grad[4]+=q*ig;grad[5]+=q*p*ig}}
  lp=-B.n*sp-0.5*R2*ip-B.n*sg-0.5*Q2*ig;if(grad){grad[3]+=-B.n+R2*ip;grad[6]+=-B.n+Q2*ig}
- for(let i=0;i<7;i++){const d=(t[i]-P.m[i])/P.s[i];lp-=0.5*d*d;if(grad)grad[i]-=d/P.s[i]}
+ const tm=[c,a,b,sp,m,h,sg];for(let i=0;i<7;i++){const d=(tm[i]-P.m[i])/P.s[i];lp-=0.5*d*d;if(grad){if(i===1)ga-=d/P.s[i];else grad[i]-=d/P.s[i]}}
+ const th=Math.tanh(w);lp+=Math.log(0.98*(1-th*th));
+ if(grad){grad[1]=ga*0.98*(1-th*th)-2*th;grad[2]+=ga*(-h);grad[5]+=ga*(-b)}
  return lp}
 // prepara datos, prior, moda (Newton) y escala de Laplace
-function bayesPrep(ipc,tc,{ventana=24,b0=0,tau=1}={}){
+function bayesPrep(ipc,tc,{ventana=24,b0=0,tau=1,pi0=null}={}){
  // ipc: [[mes,valor%],...] ; tc: {mes: valor fin de mes}
  const prevMes=m=>{let [y,mm]=m.split("-").map(Number);mm--;if(!mm){mm=12;y--}return y+"-"+String(mm).padStart(2,"0")};
  const filas=[];for(let i=1;i<ipc.length;i++){const [mes,v]=ipc[i],[mp,vp]=ipc[i-1];if(tc[mes]&&tc[prevMes(mes)]&&mp===prevMes(mes))filas.push({mes,y:v/100,p:vp/100,g:Math.log(tc[mes]/tc[prevMes(mes)])})}
- const F=filas.slice(-ventana),B={n:F.length,y:F.map(f=>f.y),p:F.map(f=>f.p),g:F.map(f=>f.g),meses:F.map(f=>f.mes),pi0:ipc[ipc.length-1][1]/100,ultimo:ipc[ipc.length-1][0]};
+ const F=filas.slice(-ventana),B={n:F.length,y:F.map(f=>f.y),p:F.map(f=>f.p),g:F.map(f=>f.g),meses:F.map(f=>f.mes),pi0:pi0!=null?pi0:ipc[ipc.length-1][1]/100,ultimo:ipc[ipc.length-1][0]};
  B.pr={m:[0,0.5,b0,Math.log(0.005),0,1,Math.log(0.03)],s:[0.05,0.5,tau,1,0.05,1,1]};
  // moda por Newton con hessiano numérico
- let t=Float64Array.from([0.01,0.5,0,Math.log(0.005),0.015,0.3,Math.log(0.03)]);const g=new Float64Array(7),g2=new Float64Array(7);
+ let t=Float64Array.from([0.01,Math.atanh(0.5/0.98),0,Math.log(0.005),0.015,0.3,Math.log(0.03)]);const g=new Float64Array(7),g2=new Float64Array(7);
  const hess=t=>{const H=[...Array(7)].map(()=>new Float64Array(7));for(let j=0;j<7;j++){const e=1e-5*Math.max(1,Math.abs(t[j]));const tp=Float64Array.from(t),tm=Float64Array.from(t);tp[j]+=e;tm[j]-=e;lpost(B,tp,g);lpost(B,tm,g2);for(let i=0;i<7;i++)H[i][j]=(g[i]-g2[i])/(2*e)}for(let i=0;i<7;i++)for(let j=0;j<i;j++){const v=(H[i][j]+H[j][i])/2;H[i][j]=H[j][i]=v}return H};
  const solve=(A,b)=>{const n=b.length,M=A.map((r,i)=>[...r,b[i]]);for(let i=0;i<n;i++){let mx=i;for(let r=i+1;r<n;r++)if(Math.abs(M[r][i])>Math.abs(M[mx][i]))mx=r;[M[i],M[mx]]=[M[mx],M[i]];for(let r=0;r<n;r++)if(r!==i){const f=M[r][i]/M[i][i];for(let c=i;c<=n;c++)M[r][c]-=f*M[i][c]}}return M.map((r,i)=>r[n]/r[i])};
  for(let it=0;it<60;it++){const lp0=lpost(B,t,g);const H=hess(t),step=solve(H.map(r=>r.map(v=>-v)),Array.from(g));let al=1,ok=false;
@@ -556,22 +578,22 @@ function realYgrad(M,z,g){
  return L}
 // U(z) = ½|z|² + (L−meta)²/(2s²) si se condiciona; gradiente en g
 function energia(M,z,g,cond){const P0=M.NP||0;let U=0;for(let i=P0;i<M.D;i++){U+=0.5*z[i]*z[i];g[i]=z[i]}
- if(P0){const t=theta(M,z),gt=new Float64Array(7),lp=lpost(M.bay,t,gt);U+=M.bay.lpMax-lp;for(let j=0;j<7;j++){let v=0;for(let i=j;i<7;i++)v+=M.bay.L[i][j]*gt[i];g[j]=-v}}
+ if(P0){const t=thetaRaw(M,z),gt=new Float64Array(7),lp=lpost(M.bay,t,gt);U+=M.bay.lpMax-lp;for(let j=0;j<7;j++){let v=0;for(let i=j;i<7;i++)v+=M.bay.L[i][j]*gt[i];g[j]=-v}}
  return {U,L:NaN}}
 // HMC con adaptación del paso (warmup) y L saltos de leapfrog
 function hmc(M,{iter=50000,warm=2000,L=12,cond=false,seed=11,guardar=10,prog,z0}={}){
  const D=M.D,r=rngF(seed),z=new Float64Array(D),g=new Float64Array(D),zp=new Float64Array(D),gp=new Float64Array(D),p=new Float64Array(D);if(z0)z.set(z0);
- let {U,L:Lc}=energia(M,z,g,cond),eps=0.1,acc=0,accW=0,logEps=Math.log(eps),hbar=0,mu=Math.log(10*eps),lbar=0;const muestras=[],Ls=[];let best={U:Infinity,z:null};
+ let {U,L:Lc}=energia(M,z,g,cond),eps=0.1,acc=0,accW=0,logEps=Math.log(eps),hbar=0,mu=Math.log(10*eps),lbar=0;const muestras=[],Ls=[],E=new Float32Array(iter);let best={U:Infinity,z:null},div=0;
  for(let it=0;it<warm+iter;it++){
   for(let i=0;i<D;i++)p[i]=r.normal();let K0=0;for(let i=0;i<D;i++)K0+=0.5*p[i]*p[i];
   zp.set(z);gp.set(g);let Up=U,Lp=Lc;const nL=1+Math.floor(r.next()*L);
   for(let s=0;s<nL;s++){for(let i=0;i<D;i++)p[i]-=0.5*eps*gp[i];for(let i=0;i<D;i++)zp[i]+=eps*p[i];const e=energia(M,zp,gp,cond);Up=e.U;Lp=e.L;for(let i=0;i<D;i++)p[i]-=0.5*eps*gp[i]}
-  let K1=0;for(let i=0;i<D;i++)K1+=0.5*p[i]*p[i];const dH=(Up+K1)-(U+K0),a=isFinite(dH)?Math.min(1,Math.exp(-dH)):0;
+  let K1=0;for(let i=0;i<D;i++)K1+=0.5*p[i]*p[i];const dH=(Up+K1)-(U+K0),a=isFinite(dH)?Math.min(1,Math.exp(-dH)):0;if(it>=warm){E[it-warm]=U+K0;if(!isFinite(dH)||dH>1000)div++}
   if(r.next()<a){z.set(zp);g.set(gp);U=Up;Lc=Lp;if(it>=warm)acc++}
   if(it<warm){const m=it+1,w=1/(m+10);hbar=(1-w)*hbar+w*(0.75-a);logEps=mu-Math.sqrt(m)/0.05*hbar;const kap=Math.pow(m,-0.75);lbar=kap*logEps+(1-kap)*lbar;eps=Math.exp(logEps);if(it===warm-1)eps=Math.exp(lbar)}
   else{Ls.push(Lc);if(U<best.U)best={U,z:z.slice()};if((it-warm)%guardar===0)muestras.push(z.slice())}
   if(prog&&it%2000===0)prog(it/(warm+iter))}
- return {muestras,Ls,acept:acc/iter,eps,best}}
+ return {muestras,Ls,acept:acc/iter,eps,best,div,E}}
 // camino más probable: descenso de gradiente sobre U desde la mejor muestra
 function map(M,z0,cond,pasos=3000){const z=Float64Array.from(z0),g=new Float64Array(M.D);let lr=0.05,{U}=energia(M,z,g,cond);
  for(let s=0;s<pasos;s++){const zn=new Float64Array(M.D);for(let i=0;i<M.D;i++)zn[i]=z[i]-lr*g[i];const gn=new Float64Array(M.D),e=energia(M,zn,gn,cond);if(e.U<U){z.set(zn);g.set(gn);U=e.U;lr*=1.05}else lr*=0.5;if(lr<1e-9)break}
@@ -619,7 +641,15 @@ function tirDia(M,cam,i,V){const T=M.dt[i],k=M.dk[i],f=M.df[i],fl=[];for(let j=0
 // pib: inflación mensual constante; n: períodos transcurridos; kmax: último período con retiro pagado
 function dolarIndif(S,pib,n,kmax,W0,TC0,R0,KB){if(n<=0)return TC0*S/W0;let lo=Math.log(TC0*1e-3),hi=Math.log(TC0*1e3);
  for(let it=0;it<48;it++){const lL=(lo+hi)/2,L=Math.exp(lL);let f=S/L-W0/TC0;const r=lL-Math.log(TC0);for(let j=KB;j<=kmax;j++)f+=R0*Math.pow(1+pib,j-KB)/(TC0*Math.exp(r*j/n));if(f>0)lo=lL;else hi=lL}return Math.exp((lo+hi)/2)}
-const HMC={construir,camino,realYgrad,energia,hmc,map,mapMeta,tir,rngF,prepDias,diario,realDia,mapMetaDia,tirDia,dolarIndif,theta,lpost,bayesPrep};
+// ---------- diagnósticos de convergencia (criterios de Stan / Vehtari et al. 2021) ----------
+// cad: array de cadenas (arrays de igual largo). R-hat dividido y tamaño de muestra efectivo multi-cadena (Geyer).
+function rhat(cad){const n=Math.floor(cad[0].length/2),seq=[];for(const c of cad){seq.push(c.slice(0,n),c.slice(n,2*n))}const m=seq.length,med=seq.map(s=>s.reduce((a,b)=>a+b,0)/n),mt=med.reduce((a,b)=>a+b,0)/m;
+ const B=n/(m-1)*med.reduce((a,x)=>a+(x-mt)**2,0),W=seq.reduce((a,s,j)=>a+s.reduce((q,x)=>q+(x-med[j])**2,0)/(n-1),0)/m;return W>0?Math.sqrt(((n-1)/n*W+B/n)/W):1}
+function ess(cad){const m=cad.length,n=cad[0].length,med=cad.map(c=>c.reduce((a,b)=>a+b,0)/n),va=cad.map((c,j)=>c.reduce((a,x)=>a+(x-med[j])**2,0)/(n-1)),W=va.reduce((a,b)=>a+b,0)/m,mt=med.reduce((a,b)=>a+b,0)/m,B=n/(m-1)*med.reduce((a,x)=>a+(x-mt)**2,0),vp=(n-1)/n*W+B/n;if(!(vp>0))return m*n;
+ const ac=t=>{let s=0;for(let j=0;j<m;j++){const c=cad[j],mu=med[j];let q=0;for(let i=0;i+t<n;i++)q+=(c[i]-mu)*(c[i+t]-mu);s+=q/n}return s/m};
+ let tau=-1,prev=Infinity;for(let t=0;t+1<n;t+=2){const r0=1-(W-ac(t))/vp,r1=1-(W-ac(t+1))/vp;let P=r0+r1;if(P<0)break;if(P>prev)P=prev;prev=P;tau+=2*P}return Math.min(m*n,m*n/Math.max(tau,1/Math.log10(m*n)))}
+function ebfmi(E){let num=0,den=0,mu=0;for(const x of E)mu+=x;mu/=E.length;for(let i=1;i<E.length;i++)num+=(E[i]-E[i-1])**2;for(const x of E)den+=(x-mu)**2;return den>0?num/den:0}
+const HMC={construir,camino,realYgrad,energia,hmc,map,mapMeta,tir,rngF,prepDias,diario,realDia,mapMetaDia,tirDia,dolarIndif,theta,thetaRaw,lpost,bayesPrep,rhat,ess,ebfmi};
 if(typeof module!=="undefined")module.exports=HMC;else root.HMC=HMC;
 })(typeof self!=="undefined"?self:globalThis);
 </script>
@@ -645,12 +675,15 @@ function construir(P){
  const tk=[...Array(K)].map((_,k)=>yrs(P.T0,P.MES1[k]));
  return {...P,b,tk,NP:P.bay?7:0,D:(P.bay?7:0)+4*K,W0:P.caja+P.H.reduce((s,h)=>s+h.vn*h.px,0)}}
 // camino completo a partir de z (para mostrar): inflación, IPC, TAMAR, tasa real extra, dólar, retiros, caja, valor mensual
-function theta(M,z){const B=M.bay,t=new Float64Array(7);for(let i=0;i<7;i++){let v=B.mu[i];for(let j=0;j<=i;j++)v+=B.L[i][j]*z[j];t[i]=v}return t}
+function thetaRaw(M,z){const B=M.bay,t=new Float64Array(7);for(let i=0;i<7;i++){let v=B.mu[i];for(let j=0;j<=i;j++)v+=B.L[i][j]*z[j];t[i]=v}return t}
+// persistencia total φ = a + b·h = 0,98·tanh(w): el modelo siempre es estable y la caminata no choca contra ninguna pared
+const aDe=t=>0.98*Math.tanh(t[1])-t[2]*t[5];
+function theta(M,z){const t=thetaRaw(M,z);t[1]=aDe(t);return t}
 function camino(M,z){
  const K=M.K,P0=M.NP||0,pi=new Float64Array(K),cpi=new Float64Array(K),tam=new Float64Array(K),y=new Float64Array(K),tc=new Float64Array(K),R=new Float64Array(K),c=new Float64Array(K),V=new Float64Array(K),cob=new Float64Array(K),G=new Float64Array(K),gx=new Float64Array(K);
  let d=0,cp=1,yy=0,lt=Math.log(M.TC0),cc=M.caja,Vprev=M.W0;const th=M.bay?theta(M,z):null;let pprev=M.bay?M.bay.pi0:0;
  for(let k=0;k<K;k++){const e=z[P0+k],u=z[P0+K+k],v=z[P0+2*K+k],w=z[P0+3*K+k];
-  if(th){const [cc_,a,b,sp,m,h,sg]=th;const g=m+h*pprev+Math.exp(sg)*u;pi[k]=Math.max(-0.02,cc_+a*pprev+b*g+Math.exp(sp)*e);pprev=pi[k];gx[k]=g;lt+=g}
+  if(th){const [cc_,a,b,sp,m,h,sg]=th,oG=M.obsG&&M.obsG[k],oP=M.obsPi&&M.obsPi[k];const g=oG!=null&&isFinite(oG)?oG:m+h*pprev+Math.exp(sg)*u;pi[k]=oP!=null&&isFinite(oP)?oP:Math.max(-0.02,cc_+a*pprev+b*g+Math.exp(sp)*e);pprev=pi[k];gx[k]=g;lt+=g}
   else{d=M.phi*d+M.sp*e;pi[k]=M.pib+d;gx[k]=Math.log(1+pi[k])+M.sf*u;lt+=gx[k]}
   const cpiIni=cp;cp*=1+pi[k];cpi[k]=cp;
   tam[k]=M.TAMAR0+9.6*(pi[k]-M.BR[k])+M.sT*w;yy+=M.sy*v;y[k]=yy;tc[k]=Math.exp(lt);
@@ -661,23 +694,24 @@ function camino(M,z){
  return {pi,cpi,tam,y,tc,R,c,V,cob,G,gx,th,real:V[K-1]/cpi[K-1]}}
 // ---------- modelo bayesiano de inflación y dólar (últimos meses de IPC y A3500) ----------
 // π_t = c + a·π_{t-1} + b·g_t + σπ·ε ;  g_t = Δlog dólar = m + h·π_{t-1} + σg·η.  θ=[c,a,b,log σπ,m,h,log σg]
-function lpost(B,t,grad){const [c,a,b,sp,m,h,sg]=t,P=B.pr;let lp=0;if(grad)grad.fill(0);
- if(!(Math.abs(a+b*h)<0.98))return -Infinity;
- const ip=Math.exp(-2*sp),ig=Math.exp(-2*sg);let R2=0,Q2=0;
+function lpost(B,tr,grad){const a=aDe(tr),[c,w,b,sp,m,h,sg]=tr,P=B.pr;let lp=0;if(grad)grad.fill(0);
+ const ip=Math.exp(-2*sp),ig=Math.exp(-2*sg);let R2=0,Q2=0,ga=0;
  for(let i=0;i<B.n;i++){const p=B.p[i],g=B.g[i],r=B.y[i]-c-a*p-b*g,q=g-m-h*p;R2+=r*r;Q2+=q*q;
-  if(grad){grad[0]+=r*ip;grad[1]+=r*p*ip;grad[2]+=r*g*ip;grad[4]+=q*ig;grad[5]+=q*p*ig}}
+  if(grad){grad[0]+=r*ip;ga+=r*p*ip;grad[2]+=r*g*ip;grad[4]+=q*ig;grad[5]+=q*p*ig}}
  lp=-B.n*sp-0.5*R2*ip-B.n*sg-0.5*Q2*ig;if(grad){grad[3]+=-B.n+R2*ip;grad[6]+=-B.n+Q2*ig}
- for(let i=0;i<7;i++){const d=(t[i]-P.m[i])/P.s[i];lp-=0.5*d*d;if(grad)grad[i]-=d/P.s[i]}
+ const tm=[c,a,b,sp,m,h,sg];for(let i=0;i<7;i++){const d=(tm[i]-P.m[i])/P.s[i];lp-=0.5*d*d;if(grad){if(i===1)ga-=d/P.s[i];else grad[i]-=d/P.s[i]}}
+ const th=Math.tanh(w);lp+=Math.log(0.98*(1-th*th));
+ if(grad){grad[1]=ga*0.98*(1-th*th)-2*th;grad[2]+=ga*(-h);grad[5]+=ga*(-b)}
  return lp}
 // prepara datos, prior, moda (Newton) y escala de Laplace
-function bayesPrep(ipc,tc,{ventana=24,b0=0,tau=1}={}){
+function bayesPrep(ipc,tc,{ventana=24,b0=0,tau=1,pi0=null}={}){
  // ipc: [[mes,valor%],...] ; tc: {mes: valor fin de mes}
  const prevMes=m=>{let [y,mm]=m.split("-").map(Number);mm--;if(!mm){mm=12;y--}return y+"-"+String(mm).padStart(2,"0")};
  const filas=[];for(let i=1;i<ipc.length;i++){const [mes,v]=ipc[i],[mp,vp]=ipc[i-1];if(tc[mes]&&tc[prevMes(mes)]&&mp===prevMes(mes))filas.push({mes,y:v/100,p:vp/100,g:Math.log(tc[mes]/tc[prevMes(mes)])})}
- const F=filas.slice(-ventana),B={n:F.length,y:F.map(f=>f.y),p:F.map(f=>f.p),g:F.map(f=>f.g),meses:F.map(f=>f.mes),pi0:ipc[ipc.length-1][1]/100,ultimo:ipc[ipc.length-1][0]};
+ const F=filas.slice(-ventana),B={n:F.length,y:F.map(f=>f.y),p:F.map(f=>f.p),g:F.map(f=>f.g),meses:F.map(f=>f.mes),pi0:pi0!=null?pi0:ipc[ipc.length-1][1]/100,ultimo:ipc[ipc.length-1][0]};
  B.pr={m:[0,0.5,b0,Math.log(0.005),0,1,Math.log(0.03)],s:[0.05,0.5,tau,1,0.05,1,1]};
  // moda por Newton con hessiano numérico
- let t=Float64Array.from([0.01,0.5,0,Math.log(0.005),0.015,0.3,Math.log(0.03)]);const g=new Float64Array(7),g2=new Float64Array(7);
+ let t=Float64Array.from([0.01,Math.atanh(0.5/0.98),0,Math.log(0.005),0.015,0.3,Math.log(0.03)]);const g=new Float64Array(7),g2=new Float64Array(7);
  const hess=t=>{const H=[...Array(7)].map(()=>new Float64Array(7));for(let j=0;j<7;j++){const e=1e-5*Math.max(1,Math.abs(t[j]));const tp=Float64Array.from(t),tm=Float64Array.from(t);tp[j]+=e;tm[j]-=e;lpost(B,tp,g);lpost(B,tm,g2);for(let i=0;i<7;i++)H[i][j]=(g[i]-g2[i])/(2*e)}for(let i=0;i<7;i++)for(let j=0;j<i;j++){const v=(H[i][j]+H[j][i])/2;H[i][j]=H[j][i]=v}return H};
  const solve=(A,b)=>{const n=b.length,M=A.map((r,i)=>[...r,b[i]]);for(let i=0;i<n;i++){let mx=i;for(let r=i+1;r<n;r++)if(Math.abs(M[r][i])>Math.abs(M[mx][i]))mx=r;[M[i],M[mx]]=[M[mx],M[i]];for(let r=0;r<n;r++)if(r!==i){const f=M[r][i]/M[i][i];for(let c=i;c<=n;c++)M[r][c]-=f*M[i][c]}}return M.map((r,i)=>r[n]/r[i])};
  for(let it=0;it<60;it++){const lp0=lpost(B,t,g);const H=hess(t),step=solve(H.map(r=>r.map(v=>-v)),Array.from(g));let al=1,ok=false;
@@ -707,22 +741,22 @@ function realYgrad(M,z,g){
  return L}
 // U(z) = ½|z|² + (L−meta)²/(2s²) si se condiciona; gradiente en g
 function energia(M,z,g,cond){const P0=M.NP||0;let U=0;for(let i=P0;i<M.D;i++){U+=0.5*z[i]*z[i];g[i]=z[i]}
- if(P0){const t=theta(M,z),gt=new Float64Array(7),lp=lpost(M.bay,t,gt);U+=M.bay.lpMax-lp;for(let j=0;j<7;j++){let v=0;for(let i=j;i<7;i++)v+=M.bay.L[i][j]*gt[i];g[j]=-v}}
+ if(P0){const t=thetaRaw(M,z),gt=new Float64Array(7),lp=lpost(M.bay,t,gt);U+=M.bay.lpMax-lp;for(let j=0;j<7;j++){let v=0;for(let i=j;i<7;i++)v+=M.bay.L[i][j]*gt[i];g[j]=-v}}
  return {U,L:NaN}}
 // HMC con adaptación del paso (warmup) y L saltos de leapfrog
 function hmc(M,{iter=50000,warm=2000,L=12,cond=false,seed=11,guardar=10,prog,z0}={}){
  const D=M.D,r=rngF(seed),z=new Float64Array(D),g=new Float64Array(D),zp=new Float64Array(D),gp=new Float64Array(D),p=new Float64Array(D);if(z0)z.set(z0);
- let {U,L:Lc}=energia(M,z,g,cond),eps=0.1,acc=0,accW=0,logEps=Math.log(eps),hbar=0,mu=Math.log(10*eps),lbar=0;const muestras=[],Ls=[];let best={U:Infinity,z:null};
+ let {U,L:Lc}=energia(M,z,g,cond),eps=0.1,acc=0,accW=0,logEps=Math.log(eps),hbar=0,mu=Math.log(10*eps),lbar=0;const muestras=[],Ls=[],E=new Float32Array(iter);let best={U:Infinity,z:null},div=0;
  for(let it=0;it<warm+iter;it++){
   for(let i=0;i<D;i++)p[i]=r.normal();let K0=0;for(let i=0;i<D;i++)K0+=0.5*p[i]*p[i];
   zp.set(z);gp.set(g);let Up=U,Lp=Lc;const nL=1+Math.floor(r.next()*L);
   for(let s=0;s<nL;s++){for(let i=0;i<D;i++)p[i]-=0.5*eps*gp[i];for(let i=0;i<D;i++)zp[i]+=eps*p[i];const e=energia(M,zp,gp,cond);Up=e.U;Lp=e.L;for(let i=0;i<D;i++)p[i]-=0.5*eps*gp[i]}
-  let K1=0;for(let i=0;i<D;i++)K1+=0.5*p[i]*p[i];const dH=(Up+K1)-(U+K0),a=isFinite(dH)?Math.min(1,Math.exp(-dH)):0;
+  let K1=0;for(let i=0;i<D;i++)K1+=0.5*p[i]*p[i];const dH=(Up+K1)-(U+K0),a=isFinite(dH)?Math.min(1,Math.exp(-dH)):0;if(it>=warm){E[it-warm]=U+K0;if(!isFinite(dH)||dH>1000)div++}
   if(r.next()<a){z.set(zp);g.set(gp);U=Up;Lc=Lp;if(it>=warm)acc++}
   if(it<warm){const m=it+1,w=1/(m+10);hbar=(1-w)*hbar+w*(0.75-a);logEps=mu-Math.sqrt(m)/0.05*hbar;const kap=Math.pow(m,-0.75);lbar=kap*logEps+(1-kap)*lbar;eps=Math.exp(logEps);if(it===warm-1)eps=Math.exp(lbar)}
   else{Ls.push(Lc);if(U<best.U)best={U,z:z.slice()};if((it-warm)%guardar===0)muestras.push(z.slice())}
   if(prog&&it%2000===0)prog(it/(warm+iter))}
- return {muestras,Ls,acept:acc/iter,eps,best}}
+ return {muestras,Ls,acept:acc/iter,eps,best,div,E}}
 // camino más probable: descenso de gradiente sobre U desde la mejor muestra
 function map(M,z0,cond,pasos=3000){const z=Float64Array.from(z0),g=new Float64Array(M.D);let lr=0.05,{U}=energia(M,z,g,cond);
  for(let s=0;s<pasos;s++){const zn=new Float64Array(M.D);for(let i=0;i<M.D;i++)zn[i]=z[i]-lr*g[i];const gn=new Float64Array(M.D),e=energia(M,zn,gn,cond);if(e.U<U){z.set(zn);g.set(gn);U=e.U;lr*=1.05}else lr*=0.5;if(lr<1e-9)break}
@@ -770,7 +804,15 @@ function tirDia(M,cam,i,V){const T=M.dt[i],k=M.dk[i],f=M.df[i],fl=[];for(let j=0
 // pib: inflación mensual constante; n: períodos transcurridos; kmax: último período con retiro pagado
 function dolarIndif(S,pib,n,kmax,W0,TC0,R0,KB){if(n<=0)return TC0*S/W0;let lo=Math.log(TC0*1e-3),hi=Math.log(TC0*1e3);
  for(let it=0;it<48;it++){const lL=(lo+hi)/2,L=Math.exp(lL);let f=S/L-W0/TC0;const r=lL-Math.log(TC0);for(let j=KB;j<=kmax;j++)f+=R0*Math.pow(1+pib,j-KB)/(TC0*Math.exp(r*j/n));if(f>0)lo=lL;else hi=lL}return Math.exp((lo+hi)/2)}
-const HMC={construir,camino,realYgrad,energia,hmc,map,mapMeta,tir,rngF,prepDias,diario,realDia,mapMetaDia,tirDia,dolarIndif,theta,lpost,bayesPrep};
+// ---------- diagnósticos de convergencia (criterios de Stan / Vehtari et al. 2021) ----------
+// cad: array de cadenas (arrays de igual largo). R-hat dividido y tamaño de muestra efectivo multi-cadena (Geyer).
+function rhat(cad){const n=Math.floor(cad[0].length/2),seq=[];for(const c of cad){seq.push(c.slice(0,n),c.slice(n,2*n))}const m=seq.length,med=seq.map(s=>s.reduce((a,b)=>a+b,0)/n),mt=med.reduce((a,b)=>a+b,0)/m;
+ const B=n/(m-1)*med.reduce((a,x)=>a+(x-mt)**2,0),W=seq.reduce((a,s,j)=>a+s.reduce((q,x)=>q+(x-med[j])**2,0)/(n-1),0)/m;return W>0?Math.sqrt(((n-1)/n*W+B/n)/W):1}
+function ess(cad){const m=cad.length,n=cad[0].length,med=cad.map(c=>c.reduce((a,b)=>a+b,0)/n),va=cad.map((c,j)=>c.reduce((a,x)=>a+(x-med[j])**2,0)/(n-1)),W=va.reduce((a,b)=>a+b,0)/m,mt=med.reduce((a,b)=>a+b,0)/m,B=n/(m-1)*med.reduce((a,x)=>a+(x-mt)**2,0),vp=(n-1)/n*W+B/n;if(!(vp>0))return m*n;
+ const ac=t=>{let s=0;for(let j=0;j<m;j++){const c=cad[j],mu=med[j];let q=0;for(let i=0;i+t<n;i++)q+=(c[i]-mu)*(c[i+t]-mu);s+=q/n}return s/m};
+ let tau=-1,prev=Infinity;for(let t=0;t+1<n;t+=2){const r0=1-(W-ac(t))/vp,r1=1-(W-ac(t+1))/vp;let P=r0+r1;if(P<0)break;if(P>prev)P=prev;prev=P;tau+=2*P}return Math.min(m*n,m*n/Math.max(tau,1/Math.log10(m*n)))}
+function ebfmi(E){let num=0,den=0,mu=0;for(const x of E)mu+=x;mu/=E.length;for(let i=1;i<E.length;i++)num+=(E[i]-E[i-1])**2;for(const x of E)den+=(x-mu)**2;return den>0?num/den:0}
+const HMC={construir,camino,realYgrad,energia,hmc,map,mapMeta,tir,rngF,prepDias,diario,realDia,mapMetaDia,tirDia,dolarIndif,theta,thetaRaw,lpost,bayesPrep,rhat,ess,ebfmi};
 if(typeof module!=="undefined")module.exports=HMC;else root.HMC=HMC;
 })(typeof self!=="undefined"?self:globalThis);
 </script>
@@ -783,7 +825,7 @@ const fd=s=>{const [y,m,d]=String(s).slice(0,10).split("-");return `${d}/${m}/${
 const iso=t=>new Date(t).toISOString().slice(0,10);
 const MESL=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const mesIdx=t=>{const d=new Date(t);return (d.getUTCFullYear()-2026)*12+d.getUTCMonth()+1-11};
-const lblMes=k=>{const d=new Date(Date.UTC(2026,10+k,1));return MESL[d.getUTCMonth()]+"-"+String(d.getUTCFullYear()).slice(2)};
+let OFF=0;const lblMes=k=>{const d=new Date(Date.UTC(2026,10+OFF+k,1));return MESL[d.getUTCMonth()]+"-"+String(d.getUTCFullYear()).slice(2)};
 const cfg={displaylogo:false,responsive:true,modeBarButtonsToRemove:["lasso2d","select2d"]};
 function base(){return{separators:",.",paper_bgcolor:css("--panel"),plot_bgcolor:css("--panel"),font:{family:"IBM Plex Sans, system-ui, sans-serif",color:css("--fg"),size:12},margin:{l:70,r:20,t:30,b:45},hoverlabel:{bgcolor:css("--panel"),bordercolor:css("--line"),font:{color:css("--fg")}},legend:{orientation:"h",y:-0.2}}}
 const leer=id=>JSON.parse(document.getElementById(id).textContent);
@@ -808,12 +850,19 @@ function armarModelo(){
  if(!isFinite(FD))throw new Error("elegí una fecha final");FD=Math.max(t0+31*864e5,Math.min(Date.parse("2029-12-31T00:00:00Z"),FD));$("h_fin").value=iso(FD);
  const dF=new Date(FD),finMes=iso(Date.UTC(dF.getUTCFullYear(),dF.getUTCMonth()+1,0));
  const MKx={...MK,horizonte:finMes,meta:+$("h_meta").value,retiro_base:+$("h_ret").value,caja_inicial:+$("h_caja").value};
- const K=mesIdx(Date.parse(finMes+"T00:00:00Z"))+1,SE=serie();
- const bay=HMC.bayesPrep(SE.ipc,SE.a3500,{ventana:+$("h_win").value,b0:(+$("h_pt").value)/10,tau:+$("h_ptc").value});if(bay.n<8)throw new Error("faltan datos de inflación y dólar");
- const pib=bay.pi0,M0=MotorCalc.preparar(S,MKx).M;
- const P={K,KB:2,T0:M0.T0,MES1:MotorCalc.MESES.slice(1,K+1),H:M0.H.map(h=>({tp:h.tp,vn:h.vn,px:h.px,p:h.p,vto:h.vto,m:mesIdx(h.vto)})),caja:M0.CAJA0,R0:MKx.retiro_base*1e6,pib,
-  phi:M0.PHI,sp:M0.SIG,sT:(+$("h_st").value)/100,sy:(+$("h_sy").value)/100/Math.sqrt(12),sf:0.02,TAMAR0:M0.TAMAR0,BR:M0.BASE_REF,TC0:M0.TC0,meta:MKx.meta*1e6,s:1,FD,bay};
- return {P,MKx,FD,M0,SE}}
+ // calendario desde la fecha de la última actualización de precios de la cartera
+ const m0=Math.max(0,mesIdx(t0)),K=mesIdx(Date.parse(finMes+"T00:00:00Z"))-m0+1,SE=serie(),ym=k=>{const d=new Date(Date.UTC(2026,10+m0+k,1));return d.toISOString().slice(0,7)};
+ const ipcMap=Object.fromEntries(SE.ipc),pAnt=SE.ipc.filter(r=>r[0]<ym(0)),pi0=pAnt.length?pAnt[pAnt.length-1][1]/100:null;
+ const bay=HMC.bayesPrep(SE.ipc,SE.a3500,{ventana:+$("h_win").value,b0:(+$("h_pt").value)/10,tau:+$("h_ptc").value,pi0});if(bay.n<8)throw new Error("faltan datos de inflación y dólar");
+ // tramo ya transcurrido: IPC publicado y dólar de fin de mes observado después de la fecha inicial
+ const obsPi=[],obsG=[],obs=[];for(let k=0;k<K;k++){const mk=ym(k),v=ipcMap[mk];obsPi.push(v!=null?v/100:null);
+  const fin=SE.a3500[mk],mesCerrado=Date.parse(ym(k+1)+"-01T00:00:00Z")<=Date.now(),ini=k===0?MK.tc.a3500:SE.a3500[ym(k-1)];obsG.push(fin&&ini&&mesCerrado?Math.log(fin/ini):null);
+  if(v!=null||obsG[k]!=null)obs.push({mes:mk,ipc:v,dolar:obsG[k]!=null?fin:null})}
+ const pib=bay.pi0,M0=MotorCalc.preparar(S,MKx).M;OFF=m0;
+ const BR=M0.BASE_REF.slice(m0);while(BR.length<K)BR.push(BR[BR.length-1]);
+ const P={K,KB:Math.max(0,2-m0),T0:M0.T0,MES1:MotorCalc.MESES.slice(m0+1,m0+K+1),H:M0.H.map(h=>({tp:h.tp,vn:h.vn,px:h.px,p:h.p,vto:h.vto,m:mesIdx(h.vto)-m0})),obsPi,obsG,caja:M0.CAJA0,R0:MKx.retiro_base*1e6,pib,
+  phi:M0.PHI,sp:M0.SIG,sT:(+$("h_st").value)/100,sy:(+$("h_sy").value)/100/Math.sqrt(12),sf:0.02,TAMAR0:M0.TAMAR0,BR,TC0:M0.TC0,meta:MKx.meta*1e6,s:1,FD,bay};
+ return {P,MKx,FD,M0,SE,m0,obs,t0}}
 // ---------- trabajador (HMC en segundo plano) ----------
 const WCODE=document.getElementById("hmc-src").textContent+`
 const QP=${JSON.stringify(QP)};
@@ -824,13 +873,18 @@ function dia(M,o){return {V:Array.from(o.V),Vr:Array.from(o.Vr),pib:Array.from(o
 onmessage=e=>{const {P,iter}=e.data;const M=HMC.construir(P);HMC.prepDias(M,P.FD);const N=M.N,Kf=M.dk[N-1]+1;
  const pe=[];for(let k=0;k<Kf;k++){let i=M.dias.findIndex(t=>t>=M.MES1[k]-1000);pe.push(i<0||k===Kf-1?N-1:i)}
  const nsMax=Math.min(10000,Math.floor(5e6/N)),guardar=Math.max(1,Math.floor(iter/nsMax));
- const a=HMC.hmc(M,{iter,cond:false,seed:11,guardar,prog:p=>postMessage({tipo:"prog",p:0.15*p,m:"caminata hamiltoniana"})});
- const mu=a.muestras.slice(0,nsMax),ns=mu.length;
- const TH=[],VU=new Float32Array(ns*N),pos=new Uint16Array(N),V=new Float32Array(ns*N),Vr=new Float32Array(ns*N),PB=new Float32Array(ns*N),NC=Math.min(300,ns),cV=new Float32Array(NC*N),cP=new Float32Array(NC*N),cU=new Float32Array(NC*N);
+ // 4 caminatas independientes desde puntos de partida dispersos; el total de iteraciones se reparte entre ellas
+ const NCAD=4,itC=Math.max(1000,Math.round(iter/NCAD)),gC=Math.max(1,Math.floor(itC/Math.floor(nsMax/NCAD))),cads=[];
+ for(let c=0;c<NCAD;c++){const rr=HMC.rngF(101+c),z0=new Float64Array(M.D);let sc=1.5;for(let t=0;t<30;t++){for(let i=0;i<M.D;i++)z0[i]=rr.normal()*sc;if(isFinite(HMC.energia(M,z0,new Float64Array(M.D)).U))break;sc*=0.8}
+  cads.push(HMC.hmc(M,{iter:itC,warm:1500,cond:false,seed:11+c,guardar:gC,z0,prog:p=>postMessage({tipo:"prog",p:0.15*(c+p)/NCAD,m:"caminata hamiltoniana "+(c+1)+" de "+NCAD})}))}
+ const nPC=Math.min(...cads.map(x=>x.muestras.length),Math.floor(nsMax/NCAD));cads.forEach(x=>x.muestras=x.muestras.slice(0,nPC));
+ const a={best:cads.reduce((b,x)=>x.best.U<b.U?x.best:b,{U:Infinity}),acept:cads.reduce((q,x)=>q+x.acept,0)/NCAD,eps:cads.reduce((q,x)=>q+x.eps,0)/NCAD};
+ const mu=cads.flatMap(x=>x.muestras),ns=mu.length;
+ const TH=[],THR=[],VU=new Float32Array(ns*N),pos=new Uint16Array(N),V=new Float32Array(ns*N),Vr=new Float32Array(ns*N),PB=new Float32Array(ns*N),NC=Math.min(300,ns),cV=new Float32Array(NC*N),cP=new Float32Array(NC*N),cU=new Float32Array(NC*N);
  const fin={V:new Float32Array(ns),Vr:new Float32Array(ns),tir:new Float32Array(ns),tirR:new Float32Array(ns),gan:new Float32Array(ns)};
  const mes={pi:[],tc:[],tam:[],y:[],G:[]};for(const k in mes)for(let j=0;j<Kf;j++)mes[k].push(new Float32Array(ns));
  const paso=Math.max(1,Math.floor(ns/NC));
- mu.forEach((z,s)=>{const o=HMC.diario(M,z),c=o.cam;for(let i=0;i<N;i++){V[i*ns+s]=o.V[i];Vr[i*ns+s]=o.Vr[i];PB[i*ns+s]=o.pim[i];VU[i*ns+s]=o.ven[i];if(o.ven[i]>0)pos[i]++}TH.push(Array.from(c.th));
+ mu.forEach((z,s)=>{const o=HMC.diario(M,z),c=o.cam;for(let i=0;i<N;i++){V[i*ns+s]=o.V[i];Vr[i*ns+s]=o.Vr[i];PB[i*ns+s]=o.pim[i];VU[i*ns+s]=o.ven[i];if(o.ven[i]>0)pos[i]++}TH.push(Array.from(c.th));THR.push(Array.from(HMC.thetaRaw(M,z)));
   if(s%paso===0&&s/paso<NC){const r=s/paso;for(let i=0;i<N;i++){cV[r*N+i]=o.V[i];cP[r*N+i]=o.pim[i];cU[r*N+i]=o.ven[i]}}
   const T=M.dt[N-1],t=HMC.tirDia(M,c,N-1,o.V[N-1]);fin.V[s]=o.V[N-1];fin.Vr[s]=o.Vr[N-1];fin.tir[s]=t;fin.tirR[s]=(1+t)/Math.pow(o.cpi[N-1],1/T)-1;fin.gan[s]=o.V[N-1]-M.W0+o.Racu[N-1];
   for(let k=0;k<Kf;k++){mes.pi[k][s]=c.pi[k];mes.tc[k][s]=o.tc[pe[k]];mes.tam[k][s]=c.tam[k];mes.y[k][s]=c.y[k];const v0=k>0?o.V[pe[k-1]]:M.W0;mes.G[k][s]=o.V[pe[k]]-v0+(o.Racu[pe[k]]-(k>0?o.Racu[pe[k-1]]:0))}
@@ -843,11 +897,21 @@ onmessage=e=>{const {P,iter}=e.data;const M=HMC.construir(P);HMC.prepDias(M,P.FD
  const hist=Array.from(fin.Vr),probMeta=hist.filter(x=>x>=P.meta).length/ns,QF={};for(const k in fin)QF[k]=qs(Float32Array.from(fin[k]),ns);
  const QM={};for(const k in mes)QM[k]=mes[k].map(a=>qs(a,ns));
  postMessage({tipo:"prog",p:0.92,m:"camino más probable y camino hacia la meta"});
+ // diagnósticos: R-hat, muestras efectivas, divergencias, E-BFMI y coincidencia con la solución de referencia
+ postMessage({tipo:"prog",p:0.9,m:"diagnósticos de la caminata"});
+ const nom=["Constante de inflación","Persistencia","Traspaso","Sorpresa de inflación","Suba base del dólar","Dólar sigue a la inflación","Sorpresa del dólar"];
+ const porC=f=>[...Array(NCAD)].map((_,c)=>[...Array(nPC)].map((_,j)=>f(c*nPC+j)));
+ const mon=[...nom.map((n,j)=>({n,f:s=>TH[s][j]})),{n:"Saldo real final",f:s=>fin.Vr[s]},{n:"Saldo final",f:s=>fin.V[s]}];
+ const diag={nPC,NCAD,itC,gC,filas:mon.map(q=>{const cc=porC(q.f);return {n:q.n,rhat:HMC.rhat(cc),ess:HMC.ess(cc)}}),
+  div:cads.reduce((q,x)=>q+x.div,0),itTot:itC*NCAD,ebfmi:cads.map(x=>HMC.ebfmi(x.E)),acc:cads.map(x=>x.acept),eps:cads.map(x=>x.eps),
+  qCad:[...Array(NCAD)].map((_,c)=>({V:qs(Float32Array.from(fin.V.subarray(c*nPC,(c+1)*nPC)),nPC),Vr:qs(Float32Array.from(fin.Vr.subarray(c*nPC,(c+1)*nPC)),nPC)})),
+  ref:[0,1,2,4,5].map(j=>{const n=nom[j],v=Float64Array.from(TH.map(t=>t[j])).sort(),med=v[Math.floor(ns/2)],mu_=v.reduce((q,x)=>q+x,0)/ns,sd=Math.sqrt(v.reduce((q,x)=>q+(x-mu_)**2,0)/ns),mo=HMC.theta({bay:M.bay},new Float64Array(7))[j];return {n,z:(med-mo)/sd}}),
+  traza:{per:porC(s=>TH[s][1]).map(c=>c.filter((_,j)=>j%Math.ceil(nPC/400)===0)),vr:porC(s=>fin.Vr[s]).map(c=>c.filter((_,j)=>j%Math.ceil(nPC/400)===0)),paso:gC*Math.ceil(nPC/400)}};
  const zmode=HMC.map(M,a.best.z,false),om=HMC.diario(M,zmode),mm=HMC.mapMetaDia(M,N-1,200,zmode),ot=HMC.diario(M,mm.z);
  const modo=dia(M,om),meta=dia(M,ot);modo.tir=HMC.tirDia(M,om.cam,N-1,om.V[N-1]);meta.tir=HMC.tirDia(M,ot.cam,N-1,ot.V[N-1]);
  const tipicas=orden.map(s=>{const o=HMC.diario(M,mu[s]),d=dia(M,o);d.tir=HMC.tirDia(M,o.cam,N-1,o.V[N-1]);return d});
  postMessage({tipo:"fin",N,Kf,pe,W0:M.W0,TC0:M.TC0,R0:P.R0,KB:M.KB,dias:M.dias.map(t=>new Date(t).toISOString().slice(0,10)),dk:Array.from(M.dk),df:Array.from(M.df),dt:Array.from(M.dt),
-  Q,QF,QM,hist,probMeta,beta:mm.beta,modo,meta,tipicas,th,pist,modaV,modaVr,bay:{n:M.bay.n,meses:M.bay.meses,y:M.bay.y,g:M.bay.g},nube:{V:cV,P:cP,U:cU,n:NC},pPos:Array.from(pos).map(c=>c/ns),acept:a.acept,eps:a.eps,iter,ns})}`;
+  Q,QF,QM,hist,probMeta,beta:mm.beta,modo,meta,tipicas,th,pist,modaV,modaVr,bay:{n:M.bay.n,meses:M.bay.meses,y:M.bay.y,g:M.bay.g},nube:{V:cV,P:cP,U:cU,n:NC},pPos:Array.from(pos).map(c=>c/ns),acept:a.acept,eps:a.eps,iter,ns,diag})}`;
 let worker=null;
 function calcular(){
  if(worker)worker.terminate();parar();
@@ -856,16 +920,16 @@ function calcular(){
  $("estado").textContent="Calculando la caminata hamiltoniana…";$("pb").hidden=false;$("pbar").style.width="0%";$("b_calc").disabled=true;
  worker=new Worker(URL.createObjectURL(new Blob([WCODE],{type:"text/javascript"})));const t0=performance.now();
  worker.onmessage=e=>{const m=e.data;if(m.tipo==="prog"){$("pbar").style.width=(m.p*100).toFixed(0)+"%";$("estado").textContent=`Calculando… ${(m.p*100).toFixed(0)}% · ${m.m}`;return}
-  RES={...m,mod};TI=0;try{const d=MotorCalc.simulate(mod.M0,{n:1,modo:"det_base",fr:mod.P.R0/1e6,baseInf:m.modo.cam.pi});RES.detDif=m.modo.cam.V[m.modo.cam.V.length-1]/m.modo.cam.cpi[m.modo.cam.cpi.length-1]-d.real[0]}catch(e){RES.detDif=NaN}$("pbar").style.width="100%";$("b_calc").disabled=false;
+  RES={...m,mod};TI=0;const hoy=new Date(Date.now()-3*3600e3).toISOString().slice(0,10);RES.iHoy=Math.max(0,Math.min(m.N-1,m.dias.findIndex(d=>d>=hoy)<0?m.N-1:m.dias.findIndex(d=>d>=hoy)));try{if(mod.m0>0||mod.obs.length)throw 0;const d=MotorCalc.simulate(mod.M0,{n:1,modo:"det_base",fr:mod.P.R0/1e6,baseInf:m.modo.cam.pi});RES.detDif=m.modo.cam.V[m.modo.cam.V.length-1]/m.modo.cam.cpi[m.modo.cam.cpi.length-1]-d.real[0]}catch(e){RES.detDif=NaN}$("pbar").style.width="100%";$("b_calc").disabled=false;
   $("estado").textContent=`Listo en ${fmt((performance.now()-t0)/1000,1)} s: ${fmt(m.iter)} iteraciones de la caminata (aceptación ${pc(m.acept,0)}), ${fmt(m.ns)} caminos diarios de ${fmt(m.N)} días para los intervalos.`;
-  prepNivel();$("anim").max=RES.N-1;$("anim").value=RES.N-1;render()};
+  prepNivel();$("anim").max=RES.N-1;$("anim").value=RES.iHoy;render()};
  worker.onerror=e=>{$("estado").textContent="Error en el cálculo: "+e.message;$("b_calc").disabled=false};
  worker.postMessage({P:mod.P,iter})}
 // ---------- presentación ----------
 const plaus=b=>b<1?"muy alcanzable":b<2?"alcanzable":b<3?"exigente":b<5?"muy improbable":"prácticamente imposible";
 const tip=()=>RES.tipicas[TI%RES.tipicas.length];
 const ruta=()=>VISTA==="tip"?tip():VISTA==="tend"?RES.modo:RES.meta;
-function render(){if(!RES)return;const R=RES,N=R.N,[lo,hi]=ci(),cl=conf()+"%",meta=R.mod.P.meta,ff=fd(R.dias[N-1]),t=tip(),c=R.meta,QF=R.QF,B=R.bay,th=R.th,QM=R.QM;
+function render(){if(!RES)return;CONF=confiab();const R=RES,N=R.N,[lo,hi]=ci(),cl=conf()+"%",meta=R.mod.P.meta,ff=fd(R.dias[N-1]),t=tip(),c=R.meta,QF=R.QF,B=R.bay,th=R.th,QM=R.QM;
  const prox=QM.pi[0],mesProx=lblMes(0).toLowerCase();
  const tiles=[
   ["Saldo final más probable",fM(R.modaV),`${fM(R.modaVr)} en pesos de hoy · al ${ff}`],
@@ -874,19 +938,21 @@ function render(){if(!RES)return;const R=RES,N=R.N,[lo,hi]=ci(),cl=conf()+"%",me
   ["Intereses y ajustes ganados",fM(QF.gan[3]),`mediana hasta el ${ff} · IC ${cl}: ${fM(QF.gan[lo])} a ${fM(QF.gan[hi])}`],
   [`Inflación de ${mesProx} (pronóstico)`,pc(prox[3],2),`IC ${cl}: ${pc(prox[lo],2)} a ${pc(prox[hi],2)} · último dato ${pc(R.mod.P.bay.pi0,1)}`],
   ["Chance de llegar a la meta",pc(R.probMeta,1),`meta ${fM(meta)} en pesos de hoy al ${ff}`],
-  ["Sorpresa necesaria para la meta",`${fmt(R.beta,1)} desvíos`,`${plaus(R.beta)} según lo que muestran los datos`]];
+  ["Sorpresa necesaria para la meta",`${fmt(R.beta,1)} desvíos`,`${plaus(R.beta)} según lo que muestran los datos`],
+  ["Confiabilidad de la caminata",CONF.veredicto,`puntaje ${CONF.puntaje}/100 · ver el panel debajo del gráfico`]];
  $("kpis").innerHTML=tiles.map(([a,b,x])=>`<div class="kpi"><div class="lbl">${a}</div><b>${b}</b><span>${x}</span></div>`).join("");
  const dif=R.detDif,difOk=Math.abs(dif)<1e4,di=indif(N-1,t.V[N-1],t.pim[N-1]),ptCero=th[2][lo]<0&&th[2][hi]>0;
- const lec=[
+const tramo=R.iHoy>0?(R.mod.obs.length?` Del ${fd(R.dias[0])} a hoy (${fd(R.dias[R.iHoy])}) la caminata usa lo que ya se publicó: ${R.mod.obs.map(o=>`${mlab(o.mes)}${o.ipc!=null?` IPC ${fmt(o.ipc,1)}%`:""}${o.dolar!=null?` dólar $${fmt(o.dolar)}`:""}`).join("; ")}; el resto de ese tramo se simula hasta que se actualicen los precios.`:` Del ${fd(R.dias[0])} a hoy (${fd(R.dias[R.iHoy])}) todavía no hay datos nuevos publicados: ese tramo se simula hasta que se actualicen los precios.`):"";
+ const lec=[`Fecha inicial: ${fd(R.dias[0])}, la de la última actualización de precios de la cartera.${tramo}`,
   `Desde el ${fd(R.dias[0])} (cartera valuada ${fM(R.W0)}, retiro de $${fmt(R.mod.P.R0)} desde enero 2027), el saldo final más probable al ${ff} es ${fM(R.modaV)} (${fM(R.modaVr)} en pesos de hoy); con ${cl} de confianza queda entre ${fM(QF.V[lo])} y ${fM(QF.V[hi])}.`,
   `Inflación: el modelo bayesiano aprendió de los últimos ${B.n} meses de IPC y dólar mayorista (${mlab(B.meses[0])} a ${mlab(B.meses[B.n-1])}). La inflación tiene una persistencia de ${fmt(th[1][3],2)} (lo que queda del mes anterior) y tiende a ${pc(R.pist[3],2)} mensual a largo plazo (IC ${cl}: ${pc(R.pist[lo],2)} a ${pc(R.pist[hi],2)}). Para ${mesProx} pronostica ${pc(prox[3],2)} (IC ${cl}: ${pc(prox[lo],2)} a ${pc(prox[hi],2)}).`,
   `Traspaso del dólar a precios: de cada 10% de suba del dólar en un mes, ${fmt(th[2][3]*10,2)} puntos pasan a la inflación de ese mes (IC ${cl}: ${fmt(th[2][lo]*10,2)} a ${fmt(th[2][hi]*10,2)}).${ptCero?" En estos meses el traspaso no se distingue de cero: el dólar y la inflación se movieron casi sin relación"+(B.meses.includes("2025-05")?" (por ejemplo, la suba del dólar de abril 2025 vino con inflación de 1,5% en mayo)":"")+". Podés cargar tu propio supuesto de traspaso en las opciones avanzadas.":""}${+$("h_ptc").value<1?` Incluye tu supuesto de ${fmt(+$("h_pt").value,1)} puntos por cada 10%, con peso ${+$("h_ptc").value<0.05?"alto":"medio"}.`:""}`,
   `La caminata que se ve (una de las ${R.tipicas.length} caminatas de la cadena que terminan más cerca de la mediana) oscila entre ${pc(Math.min(...t.cam.pi),1)} y ${pc(Math.max(...t.cam.pi),1)} de inflación mensual y termina con el dólar en $${fmt(t.tc[N-1])}; el dólar de indiferencia en ese punto es $${fmt(di)}: ${t.tc[N-1]<di?"los bonos le ganan a haberse dolarizado hoy":"haberse dolarizado hoy hubiera dejado más"}.`,
   `¿Bonos o dólar? Al ${ff}, seguir en bonos deja una ventaja mediana de USD ${fmt(R.Q.ven[N-1][3])} frente a haberse dolarizado hoy con los mismos retiros (IC ${cl}: USD ${fmt(R.Q.ven[N-1][lo])} a ${fmt(R.Q.ven[N-1][hi])}); los bonos quedan adelante en ${pc(R.pPos[N-1],0)} de los caminos.`,
   `Para terminar justo en la meta de ${fM(meta)} reales hace falta una sorpresa de ${fmt(R.beta,1)} desvíos (${plaus(R.beta)}); la chance de llegar es ${pc(R.probMeta,1)}.`,
-  isFinite(dif)?(difOk?`Control: con la misma inflación, a fin de cada mes la tendencia esperada coincide con el motor de la página de bonos (diferencia de $${fmt(Math.abs(dif))}).`:`Control: la tendencia esperada difiere del motor de la página de bonos en ${fM(Math.abs(dif))} porque con este retiro hay meses en que la caja no alcanza: acá ese faltante se financia al 85% de la TAMAR y en la página de bonos se venden bonos.`):"Control: no se pudo comparar con el motor de la página de bonos."];
+  isFinite(dif)?(difOk?`Control: con la misma inflación, a fin de cada mes la tendencia esperada coincide con el motor de la página de bonos (diferencia de $${fmt(Math.abs(dif))}).`:`Control: la tendencia esperada difiere del motor de la página de bonos en ${fM(Math.abs(dif))} porque con este retiro hay meses en que la caja no alcanza: acá ese faltante se financia al 85% de la TAMAR y en la página de bonos se venden bonos.`):(R.mod.m0>0||R.mod.obs.length?"Control: la comparación exacta con el motor de la página de bonos no aplica cuando la fecha inicial no es la del armado del motor o hay meses ya observados.":"Control: no se pudo comparar con el motor de la página de bonos.")];
  $("lectura").innerHTML=lec.map(x=>`<li>${x}</li>`).join("");
- gSaldo();gNivel();gInfl();minis();gInt();gHist();tablaPar();tabla();
+ gSaldo();gNivel();panelConf();gInfl();minis();gInt();gHist();tablaPar();tabla();
  $("serie_f").textContent="Fuentes de la historia: "+R.mod.SE.fuente+". El IPC de "+lblMes(0).toLowerCase()+" todavía no se publicó: lo que se muestra es el pronóstico.";
  $("tip_lbl").textContent=`caminata ${TI%R.tipicas.length+1} de ${R.tipicas.length}`;
  $("diag").textContent=`Diagnóstico: ${fmt(R.iter)} iteraciones, aceptación ${pc(R.acept,0)}, paso ${fmt(R.eps,3)}; ${fmt(R.ns)} estados guardados de la cadena (parámetros del modelo y shocks) para los intervalos; con 99% quedan ${fmt(Math.round(R.ns*0.005))} caminos en cada cola.`}
@@ -899,7 +965,8 @@ function gSaldo(){const R=RES,N=R.N,[lo,hi]=ci(),real=$("unid").value==="real",k
   {x,y:R.meta[k],mode:"lines",line:{color:css("--usd"),width:2,dash:"dash"},name:"Camino más probable hacia la meta",hovertemplate:"Hacia la meta: $%{y:,.0f}<extra></extra>"},
   ...(real?[{x:[x[N-1]],y:[R.mod.P.meta],mode:"markers",marker:{size:12,symbol:"star",color:css("--bad")},name:"Meta",hovertemplate:"Meta: $%{y:,.0f}<extra></extra>"}]:[])],
   {...base(),yaxis:{title:real?"Saldo en pesos de hoy":"Saldo en pesos corrientes",tickformat:",d",gridcolor:css("--line")},xaxis:{type:"date",gridcolor:css("--line"),...ticksMes(x),hoverformat:"%d/%m/%Y"},hovermode:"x unified",margin:{l:95,r:20,t:30,b:45},
-   shapes:[{type:"line",x0:x[i],x1:x[i],yref:"paper",y0:0,y1:1,line:{color:css("--accent"),width:1,dash:"dot"}}]},cfg)}
+   shapes:[{type:"line",x0:x[i],x1:x[i],yref:"paper",y0:0,y1:1,line:{color:css("--accent"),width:1,dash:"dot"}},...(R.iHoy>0?[{type:"rect",x0:x[0],x1:x[R.iHoy],yref:"paper",y0:0,y1:1,fillcolor:css("--warnbg"),opacity:0.6,line:{width:0},layer:"below"}]:[])],
+   annotations:R.iHoy>0?[{x:x[R.iHoy],yref:"paper",y:1,text:"hoy",showarrow:false,xanchor:"left",yanchor:"bottom",font:{size:11,color:css("--muted")}}]:[]},cfg)}
 function ticksMes(x){const v=[],t=[],n=x.length>500?3:x.length>200?2:1;let c=0;for(const d of x)if(d.endsWith('-01')){if(c++%n===0){v.push(d);const [y,m]=d.split('-');t.push(MESL[+m-1]+'-'+y.slice(2))}}return {tickvals:v,ticktext:t}}
 // ---------- plano de curvas de nivel (inflación del mes × saldo) ----------
 let NV=null;
@@ -935,9 +1002,9 @@ function gNivel(){if(!RES||!NV)return;const R=RES,N=R.N,i=+$("anim").value,[lo,h
   {...recU(R.meta),...A2,mode:"lines",line:{color:css("--usd"),width:1.6,dash:"dash"},showlegend:false,hovertemplate:"Hacia la meta %{y:,.1f} mil USD<extra></extra>"},
   {...recU(t),...A2,mode:"lines",line:{color:css("--fg"),width:1.8},showlegend:false,hovertemplate:"Caminata %{y:,.1f} mil USD<extra></extra>"},
   {x:[D[i]],y:[t.ven[i]/1e3],...A2,mode:"markers",marker:{size:13,color:t.ven[i]>0?css("--good"):css("--usd"),line:{color:css("--fg"),width:1.5}},showlegend:false,hovertemplate:"%{y:,.1f} mil USD<extra>la caminata hoy</extra>"}];
- const dom=ancho?{xaxis:{domain:[0,0.47]},xaxis2:{domain:[0.55,1]},yaxis:{domain:[0,1]},yaxis2:{domain:[0,1]}}:{xaxis:{domain:[0,1]},xaxis2:{domain:[0,1]},yaxis:{domain:[0.56,1]},yaxis2:{domain:[0,0.42]}};
+ const dom=ancho?{xaxis:{domain:[0,0.47]},xaxis2:{domain:[0.55,1]},yaxis:{domain:[0,1]},yaxis2:{domain:[0,1]}}:{xaxis:{domain:[0,1]},xaxis2:{domain:[0,1]},yaxis:{domain:[0.6,0.96]},yaxis2:{domain:[0,0.38]}};
  const AX=(k,o)=>({...dom[k],...o,gridcolor:css("--line"),zeroline:false});
- Plotly.react("g_niv",tr,{...base(),width:$("g_niv").clientWidth||undefined,height:ancho?580:940,margin:{l:70,r:20,t:44,b:50},showlegend:true,legend:{orientation:"h",y:ancho?-0.12:-0.06},
+ Plotly.react("g_niv",tr,{...base(),width:$("g_niv").clientWidth||undefined,height:ancho?580:660,margin:{l:70,r:20,t:44,b:50},showlegend:true,legend:{orientation:"h",y:ancho?-0.12:-0.1,font:{size:ancho?12:10}},
    xaxis:AX("xaxis",{title:"Inflación del mes (%)",range:NV.X,anchor:"y"}),yaxis:AX("yaxis",{title:"Saldo total de la cartera (millones de $)",range:NV.Y.map(v=>v/1e6),anchor:"x"}),
    xaxis2:AX("xaxis2",{type:"date",anchor:"y2",range:[D[0],D[N-1]],...ticksMes(D),hoverformat:"%d/%m/%Y"}),yaxis2:AX("yaxis2",{title:"Ventaja de bonos (miles de USD)",range:NV.U,anchor:"x2",tickformat:",.0f"}),
    annotations:[{text:"Curvas: dólar de indiferencia ($)",xref:"x domain",yref:"y domain",x:0,y:1.07,xanchor:"left",showarrow:false,font:{size:13}},
@@ -945,14 +1012,44 @@ function gNivel(){if(!RES||!NV)return;const R=RES,N=R.N,i=+$("anim").value,[lo,h
     {text:ancho?`Bonos adelante en ${pc(pp,0)} de los caminos ese día`:`Bonos adelante: ${pc(pp,0)}`,xref:"x2 domain",yref:"y2 domain",x:0.02,y:0.98,xanchor:"left",yanchor:"top",showarrow:false,font:{size:12,color:pp>=0.5?css("--good"):css("--usd")},bgcolor:css("--panel")},
     {text:"bonos adelante ↑",xref:"x2 domain",yref:"y2",x:0.99,y:0,xanchor:"right",yanchor:"bottom",showarrow:false,font:{size:11,color:css("--good")}},{text:"dólar adelante ↓",xref:"x2 domain",yref:"y2",x:0.99,y:0,xanchor:"right",yanchor:"top",showarrow:false,font:{size:11,color:css("--usd")}}],
    shapes:[{type:"rect",xref:"x",yref:"y",x0:R.Q.pib[i][lo]*100,x1:R.Q.pib[i][hi]*100,y0:R.Q.V[i][lo]/1e6,y1:R.Q.V[i][hi]/1e6,line:{color:css("--accent"),width:1.5,dash:"dash"},fillcolor:"rgba(0,0,0,0)"},
-    {type:"line",xref:"x2 domain",yref:"y2",x0:0,x1:1,y0:0,y1:0,line:{color:css("--fg"),width:1.2}},{type:"line",xref:"x2",yref:"y2 domain",x0:D[i],x1:D[i],y0:0,y1:1,line:{color:css("--accent"),width:1,dash:"dot"}}]},{...cfg,responsive:false});
- $("anim_lbl").textContent=fd(D[i]);
+    {type:"line",xref:"x2 domain",yref:"y2",x0:0,x1:1,y0:0,y1:0,line:{color:css("--fg"),width:1.2}},{type:"line",xref:"x2",yref:"y2 domain",x0:D[i],x1:D[i],y0:0,y1:1,line:{color:css("--accent"),width:1,dash:"dot"}},...(R.iHoy>0?[{type:"rect",xref:"x2",yref:"y2 domain",x0:D[0],x1:D[R.iHoy],y0:0,y1:1,fillcolor:css("--warnbg"),opacity:0.6,line:{width:0},layer:"below"}]:[])]},{...cfg,responsive:false});
+ $("anim_lbl").textContent=fd(D[i]);reloj(i);
  $("anim_txt").innerHTML=`<b>${fd(D[i])}</b> · caminata: saldo ${fM(t.V[i])}, inflación del mes ${pc(t.pim[i],2)}, dólar $${fmt(t.tc[i])} · dólar de indiferencia $${fmt(di)} · ventaja de bonos ${t.ven[i]>=0?"+":"−"}USD ${fmt(Math.abs(t.ven[i]))} (IC ${cl}: ${fmt(R.Q.ven[i][lo])} a ${fmt(R.Q.ven[i][hi])}) · bonos adelante en ${pc(pp,0)} de los caminos → <span class="pill ${gana?"ok":"mid"}">${gana?"bonos adelante":"dólar adelante"}</span>`}
-let ANI=null;
+const DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function reloj(i){const R=RES,d=new Date(R.dias[i]+"T12:00:00Z"),k=R.dk[i],pas=i<=R.iHoy&&R.iHoy>0;
+ $("rl_dia").textContent=d.getUTCDate();$("rl_mes").textContent=MESES_L[d.getUTCMonth()];$("rl_anio").textContent=d.getUTCFullYear();$("rl_sem").textContent=DIAS[d.getUTCDay()];
+ $("rl_info").innerHTML=`Día ${fmt(i)} de ${fmt(R.N-1)} desde el ${fd(R.dias[0])} · mes ${k+1} de ${R.Kf} · <span class="pill ${pas?"mid":"ok"}">${i===0?"fecha inicial":pas?"tramo ya transcurrido":"proyección HMC"}</span>`;
+ $("rl_bar").style.width=(100*i/Math.max(1,R.N-1)).toFixed(1)+"%";if(R.iHoy>0)$("rl_hoy").style.left=(100*R.iHoy/Math.max(1,R.N-1)).toFixed(1)+"%";$("rl_hoy").hidden=!(R.iHoy>0)}
+let ANI=null,ANI_INI=false;
 function parar(){if(ANI){clearInterval(ANI);ANI=null}const b=$("b_play");if(b)b.textContent="▶ Reproducir"}
-function play(){if(!RES)return;if(ANI){parar();return}const s=$("anim");if(+s.value>=RES.N-1)s.value=0;$("b_play").textContent="❚❚ Pausa";
+function play(){if(!RES)return;if(ANI){parar();return}const s=$("anim");if(+s.value>=RES.N-1||+s.value===RES.iHoy&&!ANI_INI){s.value=0}ANI_INI=true;$("b_play").textContent="❚❚ Pausa";
  ANI=setInterval(()=>{const v=Math.min(RES.N-1,+s.value+(+$("vel").value));s.value=v;gNivel();marcaSaldo();if(v>=RES.N-1)parar()},120)}
 function marcaSaldo(){const x=RES.dias[+$("anim").value];Plotly.relayout("g_saldo",{"shapes[0].x0":x,"shapes[0].x1":x})}
+// ---------- ¿la caminata es confiable? ----------
+let CONF={veredicto:"—",puntaje:0};
+function confiab(){const R=RES,d=R.diag,[lo,hi]=ci(),cl=conf()+"%";const est=(v,g,a)=>v===true||v<=g?2:v<=a?1:0;
+ const rh=Math.max(...d.filas.map(f=>f.rhat)),fr=d.filas.find(f=>f.rhat===rh),es=Math.min(...d.filas.map(f=>f.ess)),fe=d.filas.find(f=>f.ess===es),dv=d.div/d.itTot,eb=Math.min(...d.ebfmi),ac=d.acc;
+ const ancho=R.QF.V[hi]-R.QF.V[lo],sp=[lo,hi].map(j=>{const v=d.qCad.map(q=>q.V[j]);return (Math.max(...v)-Math.min(...v))/ancho}),spM=Math.max(...sp),zr=Math.max(...d.ref.map(r=>Math.abs(r.z))),fz=d.ref.find(r=>Math.abs(r.z)===zr);
+ const c=[
+  {n:"Las 4 caminatas convergen (R-hat)",w:25,e:est(rh,1.01,1.05),v:fmt(rh,3),cr:"verde ≤ 1,01 · amarillo ≤ 1,05",q:`Compara la variación dentro de cada caminata con la variación entre caminatas. Cerca de 1 significa que las 4, que arrancaron en lugares distintos, llegaron a la misma distribución. Peor caso: ${fr.n.toLowerCase()}.`},
+  {n:"Escenarios realmente distintos (muestras efectivas)",w:20,e:es>=400?2:es>=100?1:0,v:fmt(es),cr:"verde ≥ 400 · amarillo ≥ 100",q:`De los ${fmt(d.nPC*d.NCAD)} escenarios guardados, cuántos equivalen a escenarios independientes. Peor caso: ${fe.n.toLowerCase()}.`},
+  {n:"Integrador estable (divergencias)",w:15,e:d.div===0?2:dv<=0.001?1:0,v:`${fmt(d.div)} de ${fmt(d.itTot)}`,cr:"verde = 0 · amarillo ≤ 0,1%",q:"Veces en que la simulación física de la caminata se desestabilizó. Cada divergencia es una zona mal explorada."},
+  {n:"Exploración de la energía (E-BFMI)",w:10,e:eb>=0.3?2:eb>=0.2?1:0,v:fmt(eb,2),cr:"verde ≥ 0,30 · amarillo ≥ 0,20",q:"Si cada nuevo impulso alcanza para recorrer toda la distribución y no queda atrapada en una parte."},
+  {n:"Aceptación de cada caminata",w:10,e:ac.every(x=>x>=0.6&&x<=0.9)?2:ac.every(x=>x>=0.4&&x<=0.95)?1:0,v:ac.map(x=>pc(x,0)).join(" · "),cr:"verde 60% a 90% · amarillo 40% a 95%",q:`El paso se ajusta solo (quedó en ${d.eps.map(x=>fmt(x,2)).join(", ")}); fuera de rango indica pasos demasiado largos o cortos.`},
+  {n:`Las 4 caminatas dan el mismo intervalo ${cl}`,w:10,e:spM<=0.1?2:spM<=0.25?1:0,v:pc(spM,1),cr:"verde ≤ 10% del ancho · amarillo ≤ 25%",q:`Diferencia máxima entre las 4 caminatas en los extremos del intervalo del saldo final, como porcentaje del ancho del intervalo. Con 99% hay menos escenarios en las colas y la diferencia crece.`},
+  {n:"Coincide con la solución de referencia",w:10,e:zr<=0.25?2:zr<=0.5?1:0,v:`${fmt(zr,2)} desvíos`,cr:"verde ≤ 0,25 · amarillo ≤ 0,50",q:`Distancia entre el centro (mediana) de la caminata y el mejor ajuste calculado por otro camino (máximo de la probabilidad, por Newton) para los 5 coeficientes del modelo de inflación y dólar (los desvíos se excluyen porque su distribución es asimétrica y ahí la mediana y el máximo difieren aunque todo esté bien). Peor caso: ${fz.n.toLowerCase()}.`}];
+ const pts=Math.round(c.reduce((q,x)=>q+x.w*x.e/2,0)),rojoCritico=c[0].e===0||c[2].e===0;
+ const veredicto=pts>=85&&!rojoCritico?"Confiable":pts>=60?"Medianamente confiable":"No confiable";
+ return {c,puntaje:pts,veredicto,clase:veredicto==="Confiable"?"ok":veredicto==="No confiable"?"no":"mid"}}
+function panelConf(){const R=RES,C=CONF,d=R.diag,sem=["no","mid","ok"],sl=["rojo","amarillo","verde"];
+ $("conf_ver").innerHTML=`<span class="pill ${C.clase}" style="font-size:1.05rem;padding:6px 14px">${C.veredicto}</span><div class="conf-p">${C.puntaje}<small>/100</small></div><div class="note">Puntaje de confiabilidad: suma ponderada de los 7 controles (verde vale todo su peso, amarillo la mitad, rojo nada). No es una probabilidad: indica cuántos controles pasa la caminata.</div><div class="note">85 a 100: confiable · 60 a 84: medianamente confiable · menos de 60, o R-hat o divergencias en rojo: no confiable.</div>`;
+ $("conf_tab").innerHTML=`<thead><tr><th>Control</th><th>Resultado</th><th>Estado</th><th>Peso</th><th class="act">Qué significa</th></tr></thead><tbody>`+C.c.map(x=>`<tr><td style="white-space:normal;min-width:180px">${x.n}</td><td>${x.v}</td><td><span class="pill ${sem[x.e]}">${sl[x.e]}</span><div class="note" style="font-size:.72rem">${x.cr}</div></td><td>${x.w}</td><td class="act">${x.q}</td></tr>`).join("")+"</tbody>";
+ const cols=[css("--accent"),css("--usd"),css("--good"),css("--warn")],tr=[];
+ d.traza.per.forEach((c,j)=>tr.push({y:c,mode:"lines",line:{width:1,color:cols[j]},name:`Caminata ${j+1}`,xaxis:"x",yaxis:"y",hovertemplate:"%{y:.3f}<extra>caminata "+(j+1)+"</extra>"}));
+ d.traza.vr.forEach((c,j)=>tr.push({y:c.map(v=>v/1e6),mode:"lines",line:{width:1,color:cols[j]},showlegend:false,xaxis:"x2",yaxis:"y2",hovertemplate:"$%{y:.2f}M<extra>caminata "+(j+1)+"</extra>"}));
+ Plotly.react("g_traza",tr,{...base(),height:300,margin:{l:60,r:20,t:36,b:40},grid:{rows:1,columns:2,pattern:"independent"},legend:{orientation:"h",y:-0.25},
+  xaxis:{title:`escenario guardado (1 cada ${fmt(d.traza.paso)} iteraciones)`,gridcolor:css("--line")},yaxis:{title:"Persistencia",gridcolor:css("--line")},xaxis2:{title:"escenario guardado",gridcolor:css("--line")},yaxis2:{title:"Saldo real final ($M)",gridcolor:css("--line")},
+  annotations:[{text:"Traza: persistencia de la inflación",xref:"x domain",yref:"y domain",x:0,y:1.12,showarrow:false,xanchor:"left",font:{size:12}},{text:"Traza: saldo real final",xref:"x2 domain",yref:"y2 domain",x:0,y:1.12,showarrow:false,xanchor:"left",font:{size:12}}]},cfg)}
 // ---------- inflación y dólar: historia + pronóstico ----------
 const mlab=m=>{const [y,mm]=m.split("-");return MESL[+mm-1]+"-"+y.slice(2)};
 function gInfl(){const R=RES,[lo,hi]=ci(),cl=conf()+"%",K=R.Kf,xf=xm(),t=tip(),SE=R.mod.SE,B=R.bay;
